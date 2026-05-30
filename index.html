@@ -28,7 +28,6 @@
     margin-bottom: 16px;
   }
 
-  /* Mode Tabs */
   .tabs {
     display: flex;
     background: #e0e0d8;
@@ -57,7 +56,6 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
   }
 
-  /* Serve Indicator */
   .serve-indicator {
     display: flex;
     gap: 10px;
@@ -90,7 +88,6 @@
     box-shadow: 0 0 0 3px rgba(46,204,113,0.25);
   }
 
-  /* Scoreboard */
   .scoreboard {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -161,7 +158,6 @@
   }
   .team-card.winner .win-badge { display: block; }
 
-  /* Controls */
   .controls {
     display: flex;
     gap: 12px;
@@ -197,7 +193,6 @@
     transform: none;
   }
 
-  /* Serving team label */
   .serving-label {
     font-size: 0.78rem;
     color: #888;
@@ -207,7 +202,6 @@
   }
   .serving-label strong { color: #2ecc71; }
 
-  /* Reset */
   .btn-reset {
     width: 100%;
     max-width: 360px;
@@ -224,7 +218,6 @@
   }
   .btn-reset:hover { border-color: #bbb; color: #555; }
 
-  /* Win overlay message */
   .win-message {
     display: none;
     background: #2ecc71;
@@ -246,20 +239,19 @@
 
 <h1>Pickleball Scorer</h1>
 
-<!-- Mode Tabs -->
 <div class="tabs">
   <button class="tab" id="tab-singles" onclick="setMode('singles')">Singles</button>
   <button class="tab active" id="tab-doubles" onclick="setMode('doubles')">Doubles</button>
 </div>
 
-<!-- Serve Indicator (doubles only) -->
 <div class="serve-indicator" id="serve-indicator">
   <span class="serve-label">Server</span>
   <div class="server-pip active" id="pip-1">1</div>
   <div class="server-pip" id="pip-2">2</div>
 </div>
 
-<!-- Scoreboard -->
+<p style="width:100%;max-width:360px;font-size:0.72rem;color:#aaa;margin-bottom:6px;text-align:left;">*The side that serves first is Team A.</p>
+
 <div class="scoreboard">
   <div class="team-card serving" id="card-a">
     <div>
@@ -279,23 +271,17 @@
   </div>
 </div>
 
-<!-- Win Message -->
 <div class="win-message" id="win-message"></div>
-
-<!-- Serving label -->
 <div class="serving-label" id="serving-label"></div>
 
-<!-- Controls -->
 <div class="controls">
   <button class="btn btn-point" id="btn-point" onclick="handlePoint()">+ Point</button>
   <button class="btn btn-fault" id="btn-fault" onclick="handleFault()">Fault</button>
 </div>
 
-<!-- Reset -->
 <button class="btn-reset" onclick="resetGame()">↺ Reset</button>
 
 <script>
-  // State
   let state = {};
 
   function initState() {
@@ -303,11 +289,8 @@
       mode: 'doubles',
       scoreA: 0,
       scoreB: 0,
-      // servingTeam: 'A' or 'B'
       servingTeam: 'A',
-      // doubles: 1 or 2 (server number within team)
       serverNum: 1,
-      // first serve of game flag (doubles)
       firstServeOfGame: true,
       gameOver: false,
     };
@@ -324,28 +307,21 @@
     if (state.gameOver) return;
     if (state.servingTeam === 'A') state.scoreA++;
     else state.scoreB++;
-    // after scoring, server stays same, server number stays
     render();
   }
 
   function handleFault() {
     if (state.gameOver) return;
-
     if (state.mode === 'singles') {
-      // serve switches to opponent
       state.servingTeam = state.servingTeam === 'A' ? 'B' : 'A';
     } else {
-      // doubles logic
       if (state.firstServeOfGame) {
-        // very first serve: only one server, immediately switch
         state.servingTeam = state.servingTeam === 'A' ? 'B' : 'A';
         state.serverNum = 1;
         state.firstServeOfGame = false;
       } else if (state.serverNum === 1) {
-        // first fault: pass to server 2 on same team
         state.serverNum = 2;
       } else {
-        // second fault: pass to opposing team, reset to server 1
         state.servingTeam = state.servingTeam === 'A' ? 'B' : 'A';
         state.serverNum = 1;
       }
@@ -360,18 +336,14 @@
   }
 
   function render() {
-    const { mode, scoreA, scoreB, servingTeam, serverNum, firstServeOfGame, gameOver } = state;
-
-    // Check win
+    const { mode, scoreA, scoreB, servingTeam, serverNum } = state;
     const aWon = scoreA >= 11;
     const bWon = scoreB >= 11;
     state.gameOver = aWon || bWon;
 
-    // Scores
     document.getElementById('score-a').textContent = scoreA;
     document.getElementById('score-b').textContent = scoreB;
 
-    // Cards
     const cardA = document.getElementById('card-a');
     const cardB = document.getElementById('card-b');
     cardA.classList.toggle('serving', servingTeam === 'A' && !state.gameOver);
@@ -379,7 +351,6 @@
     cardA.classList.toggle('winner', aWon);
     cardB.classList.toggle('winner', bWon);
 
-    // Win message
     const winMsg = document.getElementById('win-message');
     if (aWon) {
       winMsg.textContent = `🎉 ${document.getElementById('name-a').value} wins!`;
@@ -391,7 +362,6 @@
       winMsg.classList.remove('visible');
     }
 
-    // Serve indicator (doubles only)
     const indicator = document.getElementById('serve-indicator');
     indicator.style.display = mode === 'doubles' ? 'flex' : 'none';
     if (mode === 'doubles') {
@@ -399,7 +369,6 @@
       document.getElementById('pip-2').classList.toggle('active', serverNum === 2);
     }
 
-    // Serving label
     const servingLabel = document.getElementById('serving-label');
     if (!state.gameOver) {
       const teamName = servingTeam === 'A'
@@ -410,16 +379,13 @@
       servingLabel.innerHTML = '';
     }
 
-    // Disable buttons on game over
     document.getElementById('btn-point').disabled = state.gameOver;
     document.getElementById('btn-fault').disabled = state.gameOver;
   }
 
-  // Init
   initState();
   render();
 
-  // Re-render on name change
   document.getElementById('name-a').addEventListener('input', render);
   document.getElementById('name-b').addEventListener('input', render);
 </script>
